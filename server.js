@@ -2,6 +2,7 @@ const inquirer = require("inquirer");
 const mysql = require("mysql2");
 const cTable = require("console.table");
 const express = require("express");
+require("dotenv").config();
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -14,9 +15,9 @@ app.use(express.json());
 const db = mysql.createConnection(
   {
     host: "localhost",
-    user: "root",
-    password: "password",
-    database: "employee_db",
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
   },
   console.log(`Connected to the employee_db database.`)
 );
@@ -45,6 +46,12 @@ function init() {
         newDept();
       } else if (data.goal == "Add a role") {
         newRole();
+      } else if (data.goal == "View all departments") {
+        showDepts();
+      } else if (data.goal == "View all employees") {
+        showEmp();
+      } else if (data.goal == "View all roles") {
+        showRoles();
       } else {
         return;
       }
@@ -79,35 +86,97 @@ function newEmp() {
 
 // Function to add a new department
 function newDept() {
-  inquirer.prompt([
-    {
-      type: "input",
-      name: "newDept",
-      message: "Enter the name of the department you would like to add.",
-    },
-  ]);
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "newDept",
+        message: "Enter the name of the department you would like to add.",
+      },
+    ])
+    .then(function (data) {
+      const deptName = data.newDept;
+      const sql = "INSERT INTO department(name) VALUES (?)";
+      db.query(sql, deptName, function (err, results) {
+        if (err) {
+          console.log(err);
+        }
+        console.table(results);
+        init();
+      });
+    });
 }
 
 // Function to add a new role
 function newRole() {
-  inquirer.prompt([
-    {
-      type: "input",
-      name: "role",
-      message: "What role would you like to add?",
-    },
-    {
-      type: "input",
-      name: "salary",
-      message: "What is the salary for this new role?",
-    },
-    //maybe update dept to a choices selection and display all current departments?
-    {
-      type: "input",
-      name: "dept",
-      message: "What department is this new role in?",
-    },
-  ]);
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "role",
+        message: "What role would you like to add?",
+      },
+      {
+        type: "input",
+        name: "salary",
+        message: "What is the salary for this new role?",
+      },
+      //maybe update dept to a choices selection and display all current departments?
+      {
+        type: "input",
+        name: "dept",
+        message: "What department is this new role in?",
+      },
+    ])
+    .then(function (data) {
+      const dept = data.dept;
+      const deptId = "SELECT id FROM `department` WHERE name = ?";
+      const finalId = db.query(deptId, dept, function (err, results) {
+        if (err) {
+          console.log(err);
+        }
+        console.table(results);
+        const role = data.role;
+        const salary = data.salary;
+        console.log(role);
+        console.log(salary);
+        console.log(finalId);
+        // const sql =
+        //   "INSERT INTO roles(title, salary, department_id) VALUES ('?', ?, ?)";
+        // db.query(sql, role, salary, finalId, function (err, results) {
+        //   if (err) {
+        //     console.log(err);
+        //   }
+        //   console.table(results);
+        // });
+      });
+    });
+}
+
+// Function to display all departments
+function showDepts() {
+  db.query("SELECT * from `department`", function (err, results) {
+    console.table(results);
+    init();
+  });
+}
+
+// Function to display all employees
+function showEmp() {
+  db.query(
+    "SELECT roles.salary, roles.table FROM roles JOIN employees ON roles.salary=employee.salary, roles.title=employee.job_title",
+    function (err, results) {
+      console.table(results);
+    }
+  );
+}
+
+// Function to display all roles
+function showRoles() {
+  db.query("SELECT * FROM `roles`", function (err, results) {
+    console.table(results);
+    init();
+  });
 }
 
 init();
