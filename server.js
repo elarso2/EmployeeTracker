@@ -37,6 +37,7 @@ function init() {
         "Add a role",
         "Add an employee",
         "Update an employee role",
+        "Exit the program",
       ],
     })
     .then(function (data) {
@@ -52,8 +53,9 @@ function init() {
         showEmp();
       } else if (data.goal == "View all roles") {
         showRoles();
-      } else {
-        return;
+      } else if (data.goal == "Exit the program") {
+        console.log("Goodbye :) ");
+        process.exit();
       }
     });
 }
@@ -101,7 +103,7 @@ function newDept() {
         if (err) {
           console.log(err);
         }
-        console.table(results);
+        console.table("Department Added");
         init();
       });
     });
