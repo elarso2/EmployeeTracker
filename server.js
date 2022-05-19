@@ -53,6 +53,8 @@ function init() {
         showEmp();
       } else if (data.goal == "View all roles") {
         showRoles();
+      } else if (data.goal == "Update an employee role") {
+        updateRole();
       } else if (data.goal == "Exit the program") {
         console.log("Goodbye :) ");
         process.exit();
@@ -166,11 +168,14 @@ function showDepts() {
 // Function to display all employees
 function showEmp() {
   db.query(
-    "SELECT roles.salary, roles.table FROM roles JOIN employees ON roles.salary=employee.salary, roles.title=employee.job_title",
+    'SELECT employee.id AS "ID",employee.first_name AS "First Name", employee.last_name AS "Last Name", roles.title AS "Role", roles.salary AS "Salary", department.name AS "Department" FROM employee LEFT JOIN roles ON employee.role_id = roles.id LEFT JOIN department ON roles.department_id = department.id'
+  ),
     function (err, results) {
+      if (err) {
+        console.log(err);
+      }
       console.table(results);
-    }
-  );
+    };
 }
 
 // Function to display all roles
@@ -179,6 +184,45 @@ function showRoles() {
     console.table(results);
     init();
   });
+}
+
+// Function to update an employee role
+function updateRole() {
+  const employeeList = [];
+  db.query("SELECT first_name FROM employee");
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "employeeID",
+        message:
+          "What is the id of the employee who's role you'd like to update?",
+      },
+      {
+        type: "input",
+        name: "newRole",
+        message: "What is the employees new role?",
+      },
+    ])
+    .then(function (data) {
+      const roleID = db.query("SELECT id FROM roles WHERE title = ?");
+      const title = data.newRole;
+      db.query(roleID, title, function (err, results) {
+        if (err) {
+          console.log(err);
+        }
+        const rId = results;
+      }).then(function () {
+        const employ = data.employeeID;
+        const sql = "UPDATE employee SET role_id = rId WHERE id = ?";
+        db.query(sql, employ, function (err, results) {
+          if (err) {
+            console.log(err);
+          }
+          console.log("Employee role updated.");
+        });
+      });
+    });
 }
 
 init();
