@@ -100,7 +100,7 @@ function newDept() {
     ])
     .then(function (data) {
       const deptName = data.newDept;
-      const sql = "INSERT INTO department(name) VALUES (?)";
+      const sql = "INSERT INTO department(deptName) VALUES (?)";
       db.query(sql, deptName, function (err, results) {
         if (err) {
           console.log(err);
@@ -113,48 +113,62 @@ function newDept() {
 
 // Function to add a new role
 function newRole() {
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "role",
-        message: "What role would you like to add?",
-      },
-      {
-        type: "input",
-        name: "salary",
-        message: "What is the salary for this new role?",
-      },
-      //maybe update dept to a choices selection and display all current departments?
-      {
-        type: "input",
-        name: "dept",
-        message: "What department is this new role in?",
-      },
-    ])
-    .then(function (data) {
-      const dept = data.dept;
-      const deptId = "SELECT id FROM `department` WHERE name = ?";
-      const finalId = db.query(deptId, dept, function (err, results) {
-        if (err) {
-          console.log(err);
-        }
-        console.table(results);
-        const role = data.role;
-        const salary = data.salary;
-        console.log(role);
-        console.log(salary);
-        console.log(finalId);
-        // const sql =
-        //   "INSERT INTO roles(title, salary, department_id) VALUES ('?', ?, ?)";
-        // db.query(sql, role, salary, finalId, function (err, results) {
-        //   if (err) {
-        //     console.log(err);
-        //   }
-        //   console.table(results);
-        // });
-      });
+  const deptList = [];
+  const sql = `SELECT deptName FROM department`;
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.log(err);
+    }
+    results.forEach((object) => {
+      deptList.push(object.deptName);
     });
+    // });
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "title",
+          message: "What role would you like to add?",
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "What is the salary for this new role?",
+        },
+        //maybe update dept to a choices selection and display all current departments?
+        {
+          type: "list",
+          name: "dept",
+          message: "What department is this new role in?",
+          choices: deptList,
+        },
+      ])
+      .then((data) => {
+        const newSql = "SELECT id from department WHERE deptName = ?";
+        const dept = data.dept;
+        db.query(newSql, dept, (err, results) => {
+          if (err) {
+            console.log(err);
+          }
+          const roleTitle = data.title;
+          const roleSalary = parseInt(data.salary);
+          const roleDept = results[0].id;
+          const roleSql =
+            "INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)";
+          db.query(
+            roleSql,
+            [roleTitle, roleSalary, roleDept],
+            (err, results) => {
+              if (err) {
+                console.log(err);
+              }
+              console.log("Role Added.");
+              init();
+            }
+          );
+        });
+      });
+  });
 }
 
 // Function to display all departments
@@ -167,15 +181,24 @@ function showDepts() {
 
 // Function to display all employees
 function showEmp() {
-  db.query(
-    'SELECT employee.id AS "ID",employee.first_name AS "First Name", employee.last_name AS "Last Name", roles.title AS "Role", roles.salary AS "Salary", department.name AS "Department" FROM employee LEFT JOIN roles ON employee.role_id = roles.id LEFT JOIN department ON roles.department_id = department.id'
-  ),
-    function (err, results) {
-      if (err) {
-        console.log(err);
-      }
-      console.table(results);
-    };
+  const sql = `SELECT employee.id AS "ID",
+ employee.first_name AS "First Name",
+ employee.last_name AS "Last Name",
+roles.title AS "Job Title",
+department.deptName AS "Departmemt",
+roles.salary AS "Salary",
+CONCAT(manager.first_name, " ", manager.last_name) AS "Manager"
+FROM employee
+LEFT JOIN roles ON employee.role_id = roles.id
+LEFT JOIN department ON roles.department_id = department.id
+LEFT JOIN employee AS manager ON employee.manager_id = manager.id`;
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.log(err);
+    }
+    console.table(results);
+    init();
+  });
 }
 
 // Function to display all roles
