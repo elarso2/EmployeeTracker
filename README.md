@@ -23,9 +23,9 @@ And then once back in the main terminal, you can run `node server.js` to initiat
 
 ## Demonstration
 
-You can view a demonstration video of my application [here](). And a screenshot of my functioning application can be viewed below.
+You can view a demonstration video of my application [here](https://drive.google.com/file/d/1SXaZj0zTGfOv22862W4g_cOswwyDC9RZ/view). And a screenshot of my functioning application can be viewed below.
 
-![Application Screenshot]('./assets').
+![Application Screenshot]('./assets/screenshot.PNG').
 
 ## Licensing
 
