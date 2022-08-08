@@ -27,6 +27,10 @@ You can view a demonstration video of my application [here](https://drive.google
 
 ![Application Screenshot]('./assets/screenshot.PNG').
 
+## Troubleshooting
+
+Currently, when trying to update an employee, a user can properly select an employee and their new role, and the associated employee and new role ID values are accurately being pulled, but the query to actually update the employee's role is not functioning properly. However, no error is logged, and the console shows "Employee Updated". There must be an issue with the UPDATE query, but I have not yet been able to fix it.
+
 ## Licensing
 
 Copyright (c) 2022 Elizabeth Larson
