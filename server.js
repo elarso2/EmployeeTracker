@@ -225,6 +225,8 @@ function showRoles() {
 function updateRole() {
   const employeeList = [];
   const roleList = [];
+
+  // function to pull all current employee's names
   getEmpNames = () => {
     const sql = `SELECT CONCAT(first_name, " ", last_name) AS name, id AS value FROM employee`;
     db.query(sql, (err, results) => {
@@ -235,12 +237,12 @@ function updateRole() {
         employeeList.push(object.name);
       });
       getEmpRoles();
-      // console.log(employeeList);
     });
   };
 
   getEmpNames();
 
+  // function to pull all possible roles
   getEmpRoles = () => {
     const roleSql = `SELECT id AS value, title AS title FROM roles`;
     db.query(roleSql, (err, results) => {
@@ -250,7 +252,6 @@ function updateRole() {
       results.forEach((object) => {
         roleList.push(object.title);
       });
-      // console.log(roleList);
     });
     inquirer
       .prompt([
@@ -271,47 +272,38 @@ function updateRole() {
       .then((data) => {
         const name = data.employeeName;
         const role = data.newRole;
+        let nameId = "";
+        let roleId = "";
         const roleSql = `SELECT id FROM roles WHERE title = ?`;
         const nameSql = `SELECT id FROM employee WHERE CONCAT(first_name, " ", last_name) = ?`;
-        // console.log(data.employeeName, data.newRole);
-        db.query(roleSql, role, (err, results) => {
-          if (err) {
-            console.log(err);
-          }
-          const roleId = results;
-          console.log("role id: ", roleId);
-        });
+        // get employee id based on name selected
         db.query(nameSql, name, (err, results) => {
           if (err) {
             console.log(err);
           }
-          const nameId = results;
-          console.log("name ID: ", nameId);
+          nameId = results;
+        });
+        // get new role id based on role selected
+        db.query(roleSql, role, (err, results) => {
+          if (err) {
+            console.log(err);
+          }
+          roleId = results;
+        });
+      })
+      .then(function (roleId, nameId) {
+        const updateSql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+        const params = [roleId, nameId];
+        db.query(updateSql, params, (err, results) => {
+          if (err) {
+            console.log(err);
+          }
+
+          console.log("Employee Role Updated.");
+          init();
         });
       });
   };
-
-  // init();
-
-  // .then(function (data) {
-  //   const roleID = db.query("SELECT id FROM roles WHERE title = ?");
-  //   const title = data.newRole;
-  //   db.query(roleID, title, function (err, results) {
-  //     if (err) {
-  //       console.log(err);
-  //     }
-  //     const rId = results;
-  //   }).then(function () {
-  //     const employ = data.employeeID;
-  //     const sql = "UPDATE employee SET role_id = rId WHERE id = ?";
-  //     db.query(sql, employ, function (err, results) {
-  //       if (err) {
-  //         console.log(err);
-  //       }
-  //       console.log("Employee role updated.");
-  //     });
-  // });
-  // });
 }
 
 init();
