@@ -271,22 +271,22 @@ function updateRole() {
       .then((data) => {
         const name = data.employeeName;
         const role = data.newRole;
-        const roleSql = `SELECT id FROM roles WHERE id = ?`;
+        const roleSql = `SELECT id FROM roles WHERE title = ?`;
         const nameSql = `SELECT id FROM employee WHERE CONCAT(first_name, " ", last_name) = ?`;
         // console.log(data.employeeName, data.newRole);
         db.query(roleSql, role, (err, results) => {
           if (err) {
             console.log(err);
           }
-          const empId = results;
-          console.log("employee ID: ", empId);
+          const roleId = results;
+          console.log("role id: ", roleId);
         });
         db.query(nameSql, name, (err, results) => {
           if (err) {
             console.log(err);
           }
-          const roleId = results;
-          console.log("Role ID: ", roleId);
+          const nameId = results;
+          console.log("name ID: ", nameId);
         });
       });
   };
