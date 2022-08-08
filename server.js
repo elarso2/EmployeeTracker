@@ -64,28 +64,40 @@ function init() {
 
 // Function to add a new employee
 function newEmp() {
-  inquirer.prompt([
-    {
-      type: "input",
-      name: "firstName",
-      message: "What is the employee's first name?",
-    },
-    {
-      type: "input",
-      name: "lastName",
-      message: "What is the employee's last name?",
-    },
-    {
-      type: "input",
-      name: "role",
-      message: "What is the employee's role?",
-    },
-    {
-      type: "input",
-      name: "manager",
-      message: "Please enter the name of this employee's manager.",
-    },
-  ]);
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "firstName",
+        message: "What is the employee's first name?",
+      },
+      {
+        type: "input",
+        name: "lastName",
+        message: "What is the employee's last name?",
+      },
+      {
+        type: "input",
+        name: "role",
+        message: "What is the employee's role id?",
+      },
+      {
+        type: "input",
+        name: "manager",
+        message: "Please enter the id of this employees manager.",
+      },
+    ])
+    .then((data) => {
+      const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+      const params = [data.firstName, data.lastName, data.role, data.manager];
+      db.query(sql, params, (err, rows) => {
+        if (err) {
+          console.log(err);
+        }
+        console.log("Employee Added");
+        init();
+      });
+    });
 }
 
 // Function to add a new department
@@ -212,40 +224,64 @@ function showRoles() {
 // Function to update an employee role
 function updateRole() {
   const employeeList = [];
-  db.query("SELECT first_name FROM employee");
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "employeeID",
-        message:
-          "What is the id of the employee who's role you'd like to update?",
-      },
-      {
-        type: "input",
-        name: "newRole",
-        message: "What is the employees new role?",
-      },
-    ])
-    .then(function (data) {
-      const roleID = db.query("SELECT id FROM roles WHERE title = ?");
-      const title = data.newRole;
-      db.query(roleID, title, function (err, results) {
-        if (err) {
-          console.log(err);
-        }
-        const rId = results;
-      }).then(function () {
-        const employ = data.employeeID;
-        const sql = "UPDATE employee SET role_id = rId WHERE id = ?";
-        db.query(sql, employ, function (err, results) {
-          if (err) {
-            console.log(err);
-          }
-          console.log("Employee role updated.");
-        });
+  const roleList = [];
+  getEmpNames = () => {
+    const sql = `SELECT CONCAT(first_name, " ", last_name) AS name, id AS value FROM employee`;
+    db.query(sql, (err, results) => {
+      if (err) {
+        console.log(err);
+      }
+      results.forEach((object) => {
+        employeeList.push(object.employee);
       });
     });
+  };
+
+  getEmpRoles = () => {
+    const roleSql = `SELECT id AS value, title AS title FROM roles`;
+    db.query(roleSql, (err, results) => {
+      if (err) {
+        console.log(err);
+      }
+      results.forEach((object) => {
+        roleList.push(object.title);
+      });
+    });
+  };
+  inquirer.prompt([
+    {
+      type: "list",
+      name: "employeeName",
+      message:
+        "What is the name of the employee who's role you'd like to update?",
+      choices: employeeList,
+    },
+    {
+      type: "list",
+      name: "newRole",
+      message: "What is the employees new role?",
+      choices: roleList,
+    },
+  ]);
+  // .then(function (data) {
+  //   const roleID = db.query("SELECT id FROM roles WHERE title = ?");
+  //   const title = data.newRole;
+  //   db.query(roleID, title, function (err, results) {
+  //     if (err) {
+  //       console.log(err);
+  //     }
+  //     const rId = results;
+  //   }).then(function () {
+  //     const employ = data.employeeID;
+  //     const sql = "UPDATE employee SET role_id = rId WHERE id = ?";
+  //     db.query(sql, employ, function (err, results) {
+  //       if (err) {
+  //         console.log(err);
+  //       }
+  //       console.log("Employee role updated.");
+  //     });
+  // });
+  // });
 }
 
 init();
