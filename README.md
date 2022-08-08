@@ -4,9 +4,30 @@
 
 ## Description
 
-## Licensing
+This application allows the user to keep track of their companies employees, roles, and departments. Using MySQL, you can view all roles, employees, and departments, as well as add a new role, employee, and department, and update a current employees role.
 
-MIT License
+## Dependencies
+
+This program uses `mysql2`, `inquirer`, `express`, and `console.table` for functionality. The `dotenv` package is also used to protect private information.
+
+## Usage
+
+You may fork this repository, and then once navigating to the `db` folder you can open the terminal, log in to mysql, and run the following lines to seed the database:
+
+```
+> source schema.sql;
+> source seeds.sql;
+```
+
+And then once back in the main terminal, you can run `node server.js` to initiate the inquirer prompts and begin utilizing the application.
+
+## Demonstration
+
+You can view a demonstration video of my application [here](). And a screenshot of my functioning application can be viewed below.
+
+![Application Screenshot]('./assets').
+
+## Licensing
 
 Copyright (c) 2022 Elizabeth Larson
 
