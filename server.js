@@ -232,10 +232,14 @@ function updateRole() {
         console.log(err);
       }
       results.forEach((object) => {
-        employeeList.push(object.employee);
+        employeeList.push(object.name);
       });
+      getEmpRoles();
+      // console.log(employeeList);
     });
   };
+
+  getEmpNames();
 
   getEmpRoles = () => {
     const roleSql = `SELECT id AS value, title AS title FROM roles`;
@@ -246,23 +250,49 @@ function updateRole() {
       results.forEach((object) => {
         roleList.push(object.title);
       });
+      // console.log(roleList);
     });
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "employeeName",
+          message:
+            "What is the name of the employee who's role you'd like to update?",
+          choices: employeeList,
+        },
+        {
+          type: "list",
+          name: "newRole",
+          message: "What is the employees new role?",
+          choices: roleList,
+        },
+      ])
+      .then((data) => {
+        const name = data.employeeName;
+        const role = data.newRole;
+        const roleSql = `SELECT id FROM roles WHERE id = ?`;
+        const nameSql = `SELECT id FROM employee WHERE CONCAT(first_name, " ", last_name) = ?`;
+        // console.log(data.employeeName, data.newRole);
+        db.query(roleSql, role, (err, results) => {
+          if (err) {
+            console.log(err);
+          }
+          const empId = results;
+          console.log("employee ID: ", empId);
+        });
+        db.query(nameSql, name, (err, results) => {
+          if (err) {
+            console.log(err);
+          }
+          const roleId = results;
+          console.log("Role ID: ", roleId);
+        });
+      });
   };
-  inquirer.prompt([
-    {
-      type: "list",
-      name: "employeeName",
-      message:
-        "What is the name of the employee who's role you'd like to update?",
-      choices: employeeList,
-    },
-    {
-      type: "list",
-      name: "newRole",
-      message: "What is the employees new role?",
-      choices: roleList,
-    },
-  ]);
+
+  // init();
+
   // .then(function (data) {
   //   const roleID = db.query("SELECT id FROM roles WHERE title = ?");
   //   const title = data.newRole;
